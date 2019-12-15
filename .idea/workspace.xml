@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6b4628a8-2bed-4122-8e1f-5abd478e36d9" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/broccoli.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/json.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/toml.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/yaml.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/context/ctxengine.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/context/ctxgomicroclient.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/context/ctxlogrus.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/context/ctxredis.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/engine.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/etcd/ng.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/events.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/engine/file/ng.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors/errdef.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors/errdef.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors/error.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors/error_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors/gen-errcode.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/log/hook/file.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/log/log.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/microsrv/gomicro/client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/microsrv/gomicro/service.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/microsrv/gomicro/wrap.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/middleware/http/gin.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/middleware/http/route.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/plugin/container/container.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/plugin/plugin.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/github.com/mwitkow/go-proto-validators/validator.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/google/api/annotations.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/google/api/http.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/google/api/httpbody.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/protoc-gen-swagger/options/annotations.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/proto/third_party/protoc-gen-swagger/options/openapiv2.proto" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/redis/client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/options.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/service.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/favicon-16x16.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/favicon-32x32.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/oauth2-redirect.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui-bundle.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui-bundle.js.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui-standalone-preset.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui-standalone-preset.js.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui.css.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/third_party/swagger-ui/swagger-ui.js.map" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/ui/datafile.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/swagger/ui/helper.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/bin/gen-zeus" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/bin/gen-zeus.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/ProtoVistor.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/comm.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_build_proto_sh.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_cmd.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_conf.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_dockerfile.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_errdef.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_global.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_http.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_proto_copy.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_resouce.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generate_zeus_errdef.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_go_mod.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_logic.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_makefile.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_proto.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_readme.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/generator/generator_rpc.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/gen-broccoli/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trace/tracing.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/trace/zipkin/zipkin.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/common.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/json.go" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/errors/error.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/errors/error_test.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/log/log.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="479">
+              <caret line="140" column="58" selection-start-line="140" selection-start-column="58" selection-end-line="140" selection-end-column="58" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://F:/GoWorkSpace/pkg/mod/github.com/sirupsen/logrus@v1.4.2/logger.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8325">
+              <caret line="340" column="17" selection-start-line="340" selection-start-column="17" selection-end-line="340" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/context/ctxlogrus.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1075">
+              <caret line="49" column="5" selection-start-line="49" selection-start-column="5" selection-end-line="49" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/log/hook/file.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="250">
+              <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+              <folding>
+                <element signature="e#14#118#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/microsrv/gomicro/client.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/microsrv/gomicro/service.go">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/microsrv/gomicro/wrap.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3575">
+              <caret line="159" column="5" selection-start-line="159" selection-start-column="5" selection-end-line="159" selection-end-column="5" />
+              <folding>
+                <element signature="e#17#439#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/errors/errdef.proto">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>gitlab.dg.com/BackEnd/jichuchanpin/tif/broccoli</find>
+      <find>broccoli</find>
+      <find>broccolictx</find>
+      <find>httpHandler</find>
+      <find>Subscribe</find>
+      <find>Formatter</find>
+      <find>Entry</find>
+      <find>addhook</find>
+      <find>rotatelogs</find>
+      <find>setre</find>
+      <find>elogrus</find>
+    </findStrings>
+    <replaceStrings>
+      <replace />
+      <replace>github.com/elvisNg/broccoli</replace>
+      <replace>broccoli</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>F:\thinking\Code\broccoli</dir>
+    </dirStrings>
+  </component>
+  <component name="GOROOT" path="C:\Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/config/json.go" />
+        <option value="$PROJECT_DIR$/tools/gen-broccoli/README.md" />
+        <option value="$PROJECT_DIR$/tools/gen-broccoli/main.go" />
+        <option value="$PROJECT_DIR$/tools/gen-broccoli/main.go" />
+        <option value="$PROJECT_DIR$/go.mod" />
+        <option value="$PROJECT_DIR$/service/service.go" />
+        <option value="$PROJECT_DIR$/microsrv/gomicro/wrap.go" />
+        <option value="$PROJECT_DIR$/log/log.go" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="261" />
+    <option name="y" value="694" />
+    <option name="width" value="1923" />
+    <option name="height" value="1035" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="broccoli" type="b2602c69:ProjectViewProjectNode" />
+              <item name="broccoli" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.gopath.indexing.explicitly.defined" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="go.vgo" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="F:\thinking\Code\broccoli" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-7" y="-7" width="1721" height="935" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.307276" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.329602" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.329602" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.329602" />
+      <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/config/yaml.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/toml.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="FIRST">
+          <first_editor>
+            <caret column="14" selection-start-column="6" selection-end-column="14" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/json.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="6" column="33" selection-start-line="6" selection-start-column="5" selection-end-line="6" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/generator/comm.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#19#125#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/generator/ProtoVistor.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/generator/generate_conf.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/generator/generator_rpc.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools/gen-broccoli/generator/generator_makefile.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/context/ctxengine.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2">
+          <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+          <folding>
+            <element signature="e#17#87#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/go.mod">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="11" column="9" selection-start-line="11" selection-start-column="9" selection-end-line="11" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/middleware/http/route.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/swagger/ui/datafile.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-13300">
+          <caret line="2" column="43" lean-forward="true" selection-start-line="2" selection-start-column="43" selection-end-line="2" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/swagger/ui/helper.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="6" column="39" lean-forward="true" selection-start-line="6" selection-start-column="39" selection-end-line="6" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/go/src/io/ioutil/ioutil.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1125">
+          <caret line="51" column="5" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/redis/client.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="12" column="5" selection-start-line="12" selection-start-column="5" selection-end-line="12" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/middleware/http/gin.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="21" column="18" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://F:/GoWorkSpace/pkg/mod/github.com/coreos/etcd@v3.3.13+incompatible/clientv3/op.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="359" column="5" selection-start-line="359" selection-start-column="5" selection-end-line="359" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://F:/GoWorkSpace/pkg/mod/github.com/coreos/etcd@v3.3.13+incompatible/clientv3/watch.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="56" column="4" selection-start-line="56" selection-start-column="4" selection-end-line="56" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/common.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="169" column="5" selection-start-line="169" selection-start-column="5" selection-end-line="169" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/service/options.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/config.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="21" column="4" selection-start-line="21" selection-start-column="4" selection-end-line="21" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plugin/plugin.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="650">
+          <caret line="40" column="19" selection-start-line="40" selection-start-column="19" selection-end-line="40" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plugin/container/container.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="175">
+          <caret line="7" column="27" selection-start-line="7" selection-start-column="27" selection-end-line="7" selection-end-column="27" />
+          <folding>
+            <element signature="e#19#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/service/service.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="366">
+          <caret line="126" column="31" selection-start-line="126" selection-start-column="31" selection-end-line="126" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/engine/engine.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="8" column="5" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/engine/file/ng.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="22" column="45" selection-start-line="22" selection-start-column="36" selection-end-line="22" selection-end-column="45" />
+          <folding>
+            <element signature="e#14#100#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/engine/events.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/errors/gen-errcode.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/engine/etcd/ng.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="58" column="29" selection-start-line="58" selection-start-column="19" selection-end-line="58" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/errors/errdef.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2250" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/errors/error.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/errors/error_test.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://F:/GoWorkSpace/pkg/mod/github.com/sirupsen/logrus@v1.4.2/logger.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8325">
+          <caret line="340" column="17" selection-start-line="340" selection-start-column="17" selection-end-line="340" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/context/ctxlogrus.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1075">
+          <caret line="49" column="5" selection-start-line="49" selection-start-column="5" selection-end-line="49" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/log/hook/file.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="250">
+          <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+          <folding>
+            <element signature="e#14#118#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/microsrv/gomicro/client.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/microsrv/gomicro/service.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/microsrv/gomicro/wrap.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3575">
+          <caret line="159" column="5" selection-start-line="159" selection-start-column="5" selection-end-line="159" selection-end-column="5" />
+          <folding>
+            <element signature="e#17#439#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/errors/errdef.proto">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/log/log.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="479">
+          <caret line="140" column="58" selection-start-line="140" selection-start-column="58" selection-end-line="140" selection-end-column="58" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
