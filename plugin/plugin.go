@@ -4,25 +4,29 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/client"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/elvisNg/broccoli/config"
 	broccolilog "github.com/elvisNg/broccoli/log"
-	redisclient "github.com/elvisNg/broccoli/redis"
+	broccolimongo "github.com/elvisNg/broccoli/mongo"
+	"github.com/elvisNg/broccoli/mongo/zmongo"
+	broccolimysql "github.com/elvisNg/broccoli/mysql"
+	broccoliredis "github.com/elvisNg/broccoli/redis"
+	"github.com/elvisNg/broccoli/redis/zredis"
+	"github.com/elvisNg/broccoli/sequence"
 	tracing "github.com/elvisNg/broccoli/trace"
 	"github.com/elvisNg/broccoli/trace/zipkin"
 )
 
-// Container contain comm obj
+// Container contain comm obj, impl zcontainer
 type Container struct {
-	serviceID string
-	appcfg    config.AppConf
-
-	redis *redisclient.Client
-	// gomicro
+	serviceID     string
+	appcfg        config.AppConf
+	redis         zredis.Redis
+	mongo         zmongo.Mongo
 	gomicroClient client.Client
 	logger        *logrus.Logger
 	tracer        *tracing.TracerWrap
@@ -30,7 +34,7 @@ type Container struct {
 	httpHandler http.Handler
 	// gomicro grpc
 	gomicroService micro.Service
-	// redisPool       *redis.Pool
+
 	// dbPool          *sql.DB
 	// transport       *http.Transport
 	// svc             XUtil
@@ -46,6 +50,8 @@ func (c *Container) Init(appcfg *config.AppConf) {
 	c.initRedis(&appcfg.Redis)
 	c.initLogger(&appcfg.LogConf)
 	c.initTracer(&appcfg.Trace)
+	c.initMongo(&appcfg.MongoDB)
+	c.initMysql(appcfg.MysqlSource)
 	log.Println("[Container.Init] finish")
 	c.appcfg = *appcfg
 }
@@ -61,6 +67,10 @@ func (c *Container) Reload(appcfg *config.AppConf) {
 	if c.appcfg.Trace != appcfg.Trace {
 		c.reloadTracer(&appcfg.Trace)
 	}
+	if c.appcfg.MongoDB != appcfg.MongoDB {
+		c.reloadMongo(&appcfg.MongoDB)
+	}
+	c.initMysql(appcfg.MysqlSource)
 	log.Println("[Container.Reload] finish")
 	c.appcfg = *appcfg
 }
@@ -68,7 +78,7 @@ func (c *Container) Reload(appcfg *config.AppConf) {
 // Redis
 func (c *Container) initRedis(cfg *config.Redis) {
 	if cfg.Enable {
-		c.redis = redisclient.InitClient(cfg)
+		c.redis = broccoliredis.InitClient(cfg)
 	}
 }
 
@@ -77,7 +87,7 @@ func (c *Container) reloadRedis(cfg *config.Redis) {
 		if c.redis != nil {
 			c.redis.Reload(cfg)
 		} else {
-			c.redis = redisclient.InitClient(cfg)
+			c.redis = broccoliredis.InitClient(cfg)
 		}
 	} else if c.redis != nil {
 		// 释放
@@ -86,7 +96,7 @@ func (c *Container) reloadRedis(cfg *config.Redis) {
 	}
 }
 
-func (c *Container) GetRedisCli() *redisclient.Client {
+func (c *Container) GetRedisCli() zredis.Redis {
 	return c.redis
 }
 
@@ -117,61 +127,53 @@ func (c *Container) GetLogger() *logrus.Logger {
 	return c.logger
 }
 
-// func (r *Container) SetRedisPool(p *redis.Pool) {
-// 	r.redisPool = p
+// func (c *Container) SetDBPool(p *sql.DB) {
+// 	c.dbPool = p
 // }
 
-// func (r *Container) GetRedisPool() *redis.Pool {
-// 	return r.redisPool
+// func (c *Container) GetDBPool() *sql.DB {
+// 	return c.dbPool
 // }
 
-// func (r *Container) SetDBPool(p *sql.DB) {
-// 	r.dbPool = p
+// func (c *Container) SetTransport(tr *http.Transport) {
+// 	c.transport = tr
 // }
 
-// func (r *Container) GetDBPool() *sql.DB {
-// 	return r.dbPool
+// func (c *Container) GetTransport() *http.Transport {
+// 	return c.transport
 // }
 
-// func (r *Container) SetTransport(tr *http.Transport) {
-// 	r.transport = tr
+// func (c *Container) SetSvcOptions(opt interface{}) {
+// 	c.serviceOptions = opt
 // }
 
-// func (r *Container) GetTransport() *http.Transport {
-// 	return r.transport
+// func (c *Container) GetSvcOptions() interface{} {
+// 	return c.serviceOptions
 // }
 
-// func (r *Container) SetSvcOptions(opt interface{}) {
-// 	r.serviceOptions = opt
+// func (c *Container) SetSvc(svc XUtil) {
+// 	c.svc = svc
 // }
 
-// func (r *Container) GetSvcOptions() interface{} {
-// 	return r.serviceOptions
+// func (c *Container) GetSvc() XUtil {
+// 	return c.svc
 // }
 
-// func (r *Container) SetSvc(svc XUtil) {
-// 	r.svc = svc
+// func (c *Container) SetMQProducer(p *mq.MqProducer) {
+// 	c.mqProducer = p
 // }
 
-// func (r *Container) GetSvc() XUtil {
-// 	return r.svc
+// func (c *Container) GetMQProducer() *mq.MqProducer {
+// 	return c.mqProducer
 // }
 
-// func (r *Container) SetMQProducer(p *mq.MqProducer) {
-// 	r.mqProducer = p
+// func (c *Container) Release() {
+// if c.redisPool != nil {
+// 	c.redisPool.Close()
 // }
 
-// func (r *Container) GetMQProducer() *mq.MqProducer {
-// 	return r.mqProducer
-// }
-
-// func (r *Container) Release() {
-// if r.redisPool != nil {
-// 	r.redisPool.Close()
-// }
-
-// if r.dbPool != nil {
-// 	r.dbPool.Close()
+// if c.dbPool != nil {
+// 	c.dbPool.Close()
 // }
 // }
 
@@ -196,6 +198,7 @@ func (c *Container) GetTracer() *tracing.TracerWrap {
 
 func (c *Container) SetServiceID(id string) {
 	c.serviceID = id
+	sequence.Load(id)
 }
 
 func (c *Container) GetServiceID() string {
@@ -216,4 +219,47 @@ func (c *Container) SetGoMicroService(s micro.Service) {
 
 func (c *Container) GetGoMicroService() micro.Service {
 	return c.gomicroService
+}
+
+// Mongo
+func (c *Container) initMongo(cfg *config.MongoDB) {
+	var err error
+	if cfg.Enable {
+		broccolimongo.InitDefalut(cfg)
+		c.mongo, err = broccolimongo.DefaultClient()
+		if err != nil {
+			log.Println("mgoc.DefaultClient err: ", err)
+			return
+		}
+	}
+}
+
+func (c *Container) reloadMongo(cfg *config.MongoDB) {
+	var err error
+	if cfg.Enable {
+		if c.mongo != nil {
+			broccolimongo.ReloadDefault(cfg)
+			c.mongo, err = broccolimongo.DefaultClient()
+			if err != nil {
+				log.Println("mgoc.DefaultClient err: ", err)
+				return
+			}
+		} else {
+			c.initMongo(cfg)
+		}
+	} else if c.mongo != nil {
+		// 释放
+		broccolimongo.DefaultClientRelease()
+		c.mongo = nil
+	}
+}
+
+// GetMongo ...
+func (c *Container) GetMongo() zmongo.Mongo {
+	return c.mongo
+}
+
+// mysql
+func (c *Container) initMysql(conf map[string]config.MysqlDB) {
+	broccolimysql.ReloadConfig(conf)
 }

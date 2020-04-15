@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 // Configer 配置初始化器
 type Configer interface {
 	Init(original []byte) error
@@ -21,22 +23,21 @@ type Entry struct {
 type AppConf struct {
 	LogConf             LogConf                `json:"log_conf" toml:"log_conf" yaml:"log_conf"`
 	Redis               Redis                  `json:"redis"`
+	MongoDB             MongoDB                `json:"mongodb"`
 	MongoDBSource       map[string]MongoDB     `json:"mongodb_source"`
 	MysqlSource         map[string]MysqlDB     `json:"mysql_source"`
 	RedisSource         map[string]Redis       `json:"redis_source"`
+	BrokerSource        map[string]Broker      `json:"broker_source"`
 	EBus                EBus                   `json:"ebus"`
 	Ext                 map[string]interface{} `json:"ext"`
 	Trace               Trace                  `json:"trace"`
-	Debug               DebugSwitch            `json:"debug"`
 	Obs                 Obs                    `json:"obs"`
 	Broker              Broker                 `json:"broker"`
 	CurrentBusIdSpIdMap map[string]string      `json:"current_busid_spid_map,omitempty"`
 	GoMicro             GoMicro                `json:"go_micro"`
+	UpdateTime          time.Time              `json:"-"`
 }
 
-type DebugSwitch struct {
-	InvalidCorperRetain int32 `json:"invalid_corper_retain"` // 测试用，>=1-保留无效法人代表 0-不保留
-}
 
 type Trace struct {
 	ServiceName string  `json:"service_name"`
@@ -71,6 +72,7 @@ type MysqlDB struct {
 	DataSourceName string `json:"datasourcename"`
 	MaxIdleConns   int    `json:"maxidleconns"`
 	MaxOpenConns   int    `json:"maxopenconns"`
+	TraceOnlyLogErr bool   `json:"trace_only_log_err"`
 	Enable         bool   `json:"enable"` // 启用组件
 }
 
@@ -103,25 +105,33 @@ type Obs struct {
 type Broker struct {
 	Hosts           []string     `json:"hosts"`
 	Type            string       `json:"type"`
+	ExchangeName    string       `json:"exchange_name"`    // for rabbitmq
+	ExchangeDurable bool         `json:"exchange_durable"` // for rabbitmq
+	ExchangeKind    string       `json:"exchange_kind"`    // for rabbitmq
 	NeedAuth        bool         `json:"need_auth"`
+	ExternalAuth    bool         `json:"external_auth"`
 	User            string       `json:"user"`
 	Pwd             string       `json:"pwd"`
 	TopicPrefix     string       `json:"topic_prefix"`
 	SubscribeTopics []*TopicInfo `json:"subscribe_topics"` // 服务订阅的主题
 	EnablePub       bool         `json:"enable_pub"`       // 启用pub
+	EnableSub       bool         `json:"enable_sub"`       // 启用sub
 }
 
 type TopicInfo struct {
 	Category string `json:"category"` // 类别
 	Source   string `json:"source"`   // 服务来源
 	Queue    string `json:"queue"`    // 队列/组
+	Topic    string `json:"topic"`    // 主题
+	Handler  string `json:"handler"`  // 处理器
 }
 
 type GoMicro struct {
-	ServiceName         string   `json:"service_name"`
+	ServiceName        string   `json:"service_name"`
 	ServerPort         uint32   `json:"server_port"`
+	Advertise          string   `json:"advertise"`
 	RegistryPluginType string   `json:"registry_plugin_type"` // etcd/consul
 	RegistryAddrs      []string `json:"registry_addrs"`       // etcd/consul address
 	RegistryAuthUser   string   `json:"registry_authuser"`
-	RegistryAutPwd     string   `json:"registry_authpwd"`
+	RegistryAuthPwd    string   `json:"registry_authpwd"`
 }

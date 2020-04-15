@@ -8,3 +8,4 @@ go.sum
 ~$
 !tools/bin/*.exe
 *.out
+tools/bin/gen-broccoli.exe

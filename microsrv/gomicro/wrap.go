@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/micro/go-micro/client"
 	gmerrors "github.com/micro/go-micro/errors"
@@ -60,18 +61,26 @@ func GenerateServerLogWrap(ng engine.Engine) func(fn server.HandlerFunc) server.
 			body, _ := utils.Marshal(req.Body())
 			span.SetTag("grpc server receive", string(body))
 			///////// tracer finish
-			l = l.WithFields(logrus.Fields{"tracerid": tracer.GetTraceID(spnctx)})
+			tracerID := tracer.GetTraceID(spnctx)
+			l = l.WithFields(logrus.Fields{"tracerid": tracerID})
 			c = broccolictx.LoggerToContext(spnctx, l)
-			l.Debug("serverLogWrap")
+
 			if v, ok := req.Body().(validator); ok && v != nil {
 				if err = v.Validate(); err != nil {
-					broccoliErr := broccolierrors.New(broccolierrors.ECodeInvalidParams, err.Error(), "validator.Validate")
-					err = &gmerrors.Error{Id: ng.GetContainer().GetServiceID(), Code: int32(broccoliErr.ErrCode), Detail: broccoliErr.ErrMsg, Status: broccoliErr.Cause}
+					zeusErr := broccolierrors.New(broccolierrors.ECodeInvalidParams, err.Error(), "validator.Validate")
+					status := zeusErr.Cause
+					if !strings.HasPrefix(status, tracerID+"@") {
+						status = tracerID + "@" + zeusErr.Cause
+					}
+					err = &gmerrors.Error{Id: ng.GetContainer().GetServiceID(), Code: int32(zeusErr.ErrCode), Detail: zeusErr.ErrMsg, Status: status}
 					return
 				}
 			}
 			if ng.GetContainer().GetRedisCli() != nil {
 				c = broccolictx.RedisToContext(c, ng.GetContainer().GetRedisCli().GetCli())
+			}
+			if ng.GetContainer().GetMongo() != nil {
+				c = broccolictx.MongoToContext(c, ng.GetContainer().GetMongo())
 			}
 			err = fn(c, req, rsp)
 			if err != nil && !utils.IsBlank(reflect.ValueOf(err)) {
@@ -84,7 +93,11 @@ func GenerateServerLogWrap(ng engine.Engine) func(fn server.HandlerFunc) server.
 					if utils.IsEmptyString(serviceID) {
 						serviceID = ng.GetContainer().GetServiceID()
 					}
-					err = &gmerrors.Error{Id: serviceID, Code: int32(broccoliErr.ErrCode), Detail: broccoliErr.ErrMsg, Status: broccoliErr.Cause}
+					status := broccoliErr.Cause
+					if !strings.HasPrefix(status, tracerID+"@") {
+						status = tracerID + "@" + broccoliErr.Cause
+					}
+					err = &gmerrors.Error{Id: serviceID, Code: int32(broccoliErr.ErrCode), Detail: broccoliErr.ErrMsg, Status: status}
 					return
 				}
 				if errors.As(err, &gmErr) {

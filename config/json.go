@@ -1,8 +1,9 @@
 package config
 
 import (
-	"log"
 	"errors"
+	"log"
+	"time"
 
 	"github.com/elvisNg/broccoli/utils"
 )
@@ -26,6 +27,7 @@ func (j *Jsoner) Init(original []byte) (err error) {
 	}
 	j.original = original
 	j.conf = &conf
+	j.conf.UpdateTime = time.Now()
 	return nil
 }
 

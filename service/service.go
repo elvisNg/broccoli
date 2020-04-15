@@ -29,9 +29,11 @@ import (
 	"github.com/elvisNg/broccoli/config"
 	"github.com/elvisNg/broccoli/engine"
 	"github.com/elvisNg/broccoli/engine/etcd"
-	 broccolierrors "github.com/elvisNg/broccoli/errors"
+	"github.com/elvisNg/broccoli/engine/file"
+	broccolierrors "github.com/elvisNg/broccoli/errors"
 	"github.com/elvisNg/broccoli/microsrv/gomicro"
-	"github.com/elvisNg/broccoli/plugin"
+	zgomicro "github.com/elvisNg/broccoli/microsrv/gomicro"
+	"github.com/elvisNg/broccoli/plugin/zcontainer"
 	swagger "github.com/elvisNg/broccoli/swagger/ui"
 	"github.com/elvisNg/broccoli/utils"
 )
@@ -63,15 +65,16 @@ func init() {
 	}
 }
 
-func newEtcdEngine(cnt *plugin.Container) (engine.Engine, error) {
+func newEtcdEngine(cnt zcontainer.Container) (engine.Engine, error) {
 	return etcd.New(confEntry, cnt)
 }
 
-func newFileEngine(cnt *plugin.Container) (engine.Engine, error) {
-	return nil, nil
+// newFileEngine fileengine的实现，目前并不完善，不要应用到生产，可简单用在开发测试
+func newFileEngine(cnt zcontainer.Container) (engine.Engine, error) {
+	return file.New(confEntry, cnt)
 }
 
-func Run(cnt *plugin.Container, conf *Options, opts ...Option) (err error) {
+func Run(cnt zcontainer.Container, conf *Options, opts ...Option) (err error) {
 	opt, err := ParseCommandLine()
 	if err != nil {
 		log.Printf("[broccoli] [service.Run] err: %s\n", err)
@@ -118,19 +121,27 @@ func (s *Service) Init() (err error) {
 		return
 	}
 
+	// 触发服务初始化完成事件
+	if s.options.InitServiceCompleteFn != nil {
+		utils.AsyncFuncSafe(context.Background(), func(args ...interface{}) {
+			s.options.InitServiceCompleteFn(s.ng)
+		}, nil)
+	}
+
 	return
 }
 
 type Service struct {
 	options        *Options
-	container      *plugin.Container
+	container      zcontainer.Container
 	ng             engine.Engine
 	watcherCancelC chan struct{}
 	watcherErrorC  chan struct{}
 	watcherWg      sync.WaitGroup
 }
 
-func NewService(options Options, container *plugin.Container, opts ...Option) *Service {
+func NewService(options Options, container zcontainer.Container, opts ...Option) *Service {
+	//bind option to service
 	o := options
 	for _, opt := range opts {
 		if opt != nil {
@@ -315,7 +326,7 @@ func (s *Service) RunServer() (err error) {
 func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err error) {
 	var gomicroservice micro.Service
 	opts := []micro.Option{
-		micro.WrapHandler(gomicro.GenerateServerLogWrap(s.ng)), // 保证serverlogwrap在最前
+		micro.WrapHandler(zgomicro.GenerateServerLogWrap(s.ng)), // 保证serverlogwrap在最前
 	}
 	if len(s.options.GoMicroServerWrapGenerateFn) != 0 {
 		for _, fn := range s.options.GoMicroServerWrapGenerateFn {
@@ -327,7 +338,7 @@ func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err err
 	}
 	// new micro client
 	cliOpts := []client.Option{
-		client.Wrap(gomicro.GenerateClientLogWrap(s.ng)), // 保证在最前
+		client.Wrap(zgomicro.GenerateClientLogWrap(s.ng)), // 保证在最前
 	}
 	if len(s.options.GoMicroClientWrapGenerateFn) != 0 {
 		for _, fn := range s.options.GoMicroClientWrapGenerateFn {
@@ -352,7 +363,7 @@ func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err err
 		return nil
 	}))
 	// new micro service
-	gomicroservice = gomicro.NewService(context.Background(), conf, opts...)
+	gomicroservice = zgomicro.NewService(context.Background(), conf, opts...)
 	if s.options.GoMicroHandlerRegisterFn != nil {
 		if err = s.options.GoMicroHandlerRegisterFn(gomicroservice.Server()); err != nil {
 			log.Println("[broccoli] [s.newGomicroSrv] GoMicroHandlerRegister err:", err)
@@ -366,10 +377,10 @@ func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err err
 
 type gwBodyWriter struct {
 	http.ResponseWriter
-	done    bool
-	status  int
+	done        bool
+	status      int
 	broccoliErr *broccolierrors.Error
-	body    *bytes.Buffer
+	body        *bytes.Buffer
 }
 
 // 这里使用指针实现，传递指针，保证done status值的变更传递
@@ -434,6 +445,8 @@ func grpcGatewayHTTPError(ctx context.Context, mux *gruntime.ServeMux, marshaler
 			return
 		}
 	}
+
+	broccolierrors.ECodeProxyFailed.ParseErr(msg).Write(w)
 
 	// body := &struct {
 	// 	Error   string     `protobuf:"bytes,100,name=error" json:"error"`

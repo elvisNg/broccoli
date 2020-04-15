@@ -11,7 +11,7 @@ import (
 
 	"github.com/elvisNg/broccoli/config"
 	"github.com/elvisNg/broccoli/engine"
-	"github.com/elvisNg/broccoli/plugin"
+	"github.com/elvisNg/broccoli/plugin/zcontainer"
 	"github.com/elvisNg/broccoli/utils"
 )
 
@@ -19,7 +19,7 @@ type ng struct {
 	entry      *config.Entry
 	configer   config.Configer
 	client     *etcd.Client
-	container  *plugin.Container
+	container  zcontainer.Container
 	context    context.Context
 	cancelFunc context.CancelFunc
 	options    *Options
@@ -31,7 +31,7 @@ type Options struct {
 
 type Option func(o *Options)
 
-func New(entry *config.Entry, container *plugin.Container, opts ...Option) (engine.Engine, error) {
+func New(entry *config.Entry, container zcontainer.Container, opts ...Option) (engine.Engine, error) {
 	n := &ng{
 		entry:     entry,
 		container: container,
@@ -174,7 +174,7 @@ func (n *ng) GetConfiger() (config.Configer, error) {
 	return n.configer, nil
 }
 
-func (n *ng) GetContainer() *plugin.Container {
+func (n *ng) GetContainer() zcontainer.Container {
 	return n.container
 }
 
@@ -184,7 +184,7 @@ func (n *ng) Subscribe(changes chan interface{}, cancelC chan struct{}) error {
 	defer watcher.Close()
 	defer close(cancelC)
 	log.Printf("[broccoli] [engine.Subscribe] Begin watching etcd configpath: %s\n", n.entry.ConfigPath)
-	rch := watcher.Watch(n.context, n.entry.ConfigPath, etcd.WithPrefix())
+	rch := watcher.Watch(n.context, n.entry.ConfigPath, etcd.WithPrefix(), etcd.WithPrevKV())
 	for wresp := range rch {
 		if wresp.Canceled {
 			log.Println("[broccoli] [engine.Subscribe] Stop watching: graceful shutdown")
@@ -195,6 +195,10 @@ func (n *ng) Subscribe(changes chan interface{}, cancelC chan struct{}) error {
 			return err
 		}
 		for _, ev := range wresp.Events {
+			if string(ev.Kv.Value) == string(ev.PrevKv.Value) {
+				log.Println("[zeus] [engine.Subscribe] config content no changed")
+				continue
+			}
 			change, err := n.parseChange(ev)
 			if err != nil {
 				log.Printf("[broccoli] [engine.Subscribe] ignore '%s', error: %s\n", eventToString(ev), err)
