@@ -8,24 +8,46 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-	zipkintracer "github.com/openzipkin/zipkin-go-opentracing"
-	"github.com/sirupsen/logrus"
-
 	broccolictx "github.com/elvisNg/broccoli/context"
 	"github.com/elvisNg/broccoli/engine"
 	broccolierrors "github.com/elvisNg/broccoli/errors"
 	"github.com/elvisNg/broccoli/utils"
+	"github.com/gin-gonic/gin"
+	proto "github.com/golang/protobuf/proto"
+	"github.com/opentracing/opentracing-go"
+	zipkintracer "github.com/openzipkin/zipkin-go-opentracing"
+	"github.com/sirupsen/logrus"
 )
 
-const broccoli_CTX = "broccolictx"
+const BROCCOLI_CTX = "broccolictx"
+const BROCCOLI_HTTP_ERR = "broccoli_http_err"
+const BROCCOLI_HTTP_REWRITE_ERR = "broccoli_http_rewrite_err"
+const BROCCOLI_HTTP_REWRITE_RESPONSE = "broccoli_http_rewrite_response"
 
 var SuccessResponse SuccessResponseHandler = defaultSuccessResponse
 var ErrorResponse ErrorResponseHandler = defaultErrorResponse
 
 type SuccessResponseHandler func(c *gin.Context, rsp interface{})
 type ErrorResponseHandler func(c *gin.Context, err error)
+type reWriteErrFn func(c *gin.Context, err error)
+
+// SetReWriteErrFn 自定义错误处理
+func SetReWriteErrFn(f reWriteErrFn) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.Set(BROCCOLI_HTTP_REWRITE_ERR, f)
+		c.Next()
+	}
+}
+
+type reWriteResponseFn func(c *gin.Context, rsp interface{})
+
+// SetReWriteResponseFn 自定义返回处理
+func SetReWriteResponseFn(f reWriteResponseFn) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.Set(BROCCOLI_HTTP_REWRITE_RESPONSE, f)
+		c.Next()
+	}
+}
 
 func NotFound(ng engine.Engine) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -106,8 +128,7 @@ func Access(ng engine.Engine) gin.HandlerFunc {
 		if ng.GetContainer().GetRedisCli() != nil {
 			ctx = broccolictx.RedisToContext(ctx, ng.GetContainer().GetRedisCli().GetCli())
 		}
-
-		c.Set(broccoli_CTX, ctx)
+		c.Set(BROCCOLI_CTX, ctx)
 		l.Debugln("access start", c.Request.URL.Path)
 		c.Next()
 		l.Debugln("access end", c.Request.URL.Path)
@@ -116,7 +137,7 @@ func Access(ng engine.Engine) gin.HandlerFunc {
 
 func ExtractLogger(c *gin.Context) *logrus.Entry {
 	ctx := c.Request.Context()
-	if cc, ok := c.Value(broccoli_CTX).(context.Context); ok && cc != nil {
+	if cc, ok := c.Value(BROCCOLI_CTX).(context.Context); ok && cc != nil {
 		ctx = cc
 	}
 	return broccolictx.ExtractLogger(ctx)
@@ -124,7 +145,7 @@ func ExtractLogger(c *gin.Context) *logrus.Entry {
 
 func ExtractTracerID(c *gin.Context) string {
 	ctx := c.Request.Context()
-	if cc, ok := c.Value(broccoli_CTX).(context.Context); ok && cc != nil {
+	if cc, ok := c.Value(BROCCOLI_CTX).(context.Context); ok && cc != nil {
 		ctx = cc
 	}
 	span := opentracing.SpanFromContext(ctx)
@@ -133,7 +154,7 @@ func ExtractTracerID(c *gin.Context) string {
 
 func ExtractEngine(c *gin.Context) (engine.Engine, error) {
 	ctx := c.Request.Context()
-	if cc, ok := c.Value(broccoli_CTX).(context.Context); ok && cc != nil {
+	if cc, ok := c.Value(BROCCOLI_CTX).(context.Context); ok && cc != nil {
 		ctx = cc
 	}
 	return broccolictx.ExtractEngine(ctx)
@@ -148,6 +169,15 @@ func defaultSuccessResponse(c *gin.Context, rsp interface{}) {
 		res.ServiceID = ng.GetContainer().GetServiceID()
 	}
 	res.Data = rsp
+	f, exists := c.Get(BROCCOLI_HTTP_REWRITE_RESPONSE)
+	if exists && f != nil {
+		c.Set(BROCCOLI_HTTP_REWRITE_RESPONSE, nil)
+		ff, ok := f.(reWriteResponseFn)
+		if ok {
+			ff(c, rsp)
+			return
+		}
+	}
 	res.Write(c.Writer)
 }
 
@@ -158,10 +188,22 @@ func defaultErrorResponse(c *gin.Context, err error) {
 	if broccoliErr == nil {
 		broccoliErr = broccolierrors.New(broccolierrors.ECodeSystem, "err was a nil error or was a nil *broccolierrors.Error", "assertError")
 	}
-	broccoliErr.TracerID = ExtractTracerID(c)
+	if utils.IsEmptyString(broccoliErr.TracerID) {
+		broccoliErr.TracerID = ExtractTracerID(c)
+	}
 	if utils.IsEmptyString(broccoliErr.ServiceID) {
 		if ng, _ := ExtractEngine(c); ng != nil {
 			broccoliErr.ServiceID = ng.GetContainer().GetServiceID()
+		}
+	}
+	c.Set(BROCCOLI_HTTP_ERR, err)
+	f, exists := c.Get(BROCCOLI_HTTP_REWRITE_ERR)
+	if exists && f != nil {
+		c.Set(BROCCOLI_HTTP_REWRITE_ERR, nil)
+		ff, ok := f.(reWriteErrFn)
+		if ok {
+			ff(c, err)
+			return
 		}
 	}
 	broccoliErr.Write(c.Writer)
@@ -193,13 +235,21 @@ func GenerateGinHandle(handleFunc interface{}) func(c *gin.Context) {
 		rspV := reflect.New(rspT)
 
 		req := reqV.Interface()
-		if err := c.ShouldBind(req); err != nil {
-			ExtractLogger(c).Error(err)
-			ErrorResponse(c, broccolierrors.ECodeInvalidParams.ParseErr(err.Error()))
-			return
+		// 针对proto.Message进行反序列化和校验
+		if pb, ok := req.(proto.Message); ok {
+			if c.GetBool(ZEUS_HTTP_USE_GINBIND_VALIDATE_FOR_PB) {
+				if err := c.ShouldBind(req); err != nil {
+					ExtractLogger(c).Error(err)
+					ErrorResponse(c, broccolierrors.ECodeInvalidParams.ParseErr(err.Error()))
+					return
+				}
+			} else {
+
+			}
 		}
+
 		ctx := c.Request.Context()
-		if cc, ok := c.Value(broccoli_CTX).(context.Context); ok && cc != nil {
+		if cc, ok := c.Value(BROCCOLI_CTX).(context.Context); ok && cc != nil {
 			ctx = cc
 		}
 		ctxV := reflect.ValueOf(ctx)
