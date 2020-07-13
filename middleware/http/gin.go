@@ -4,25 +4,27 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
-	"net/http"
-	"reflect"
-
 	broccolictx "github.com/elvisNg/broccoli/context"
 	"github.com/elvisNg/broccoli/engine"
 	broccolierrors "github.com/elvisNg/broccoli/errors"
 	"github.com/elvisNg/broccoli/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang/protobuf/jsonpb"
 	proto "github.com/golang/protobuf/proto"
 	"github.com/opentracing/opentracing-go"
 	zipkintracer "github.com/openzipkin/zipkin-go-opentracing"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"reflect"
 )
 
 const BROCCOLI_CTX = "broccolictx"
 const BROCCOLI_HTTP_ERR = "broccoli_http_err"
 const BROCCOLI_HTTP_REWRITE_ERR = "broccoli_http_rewrite_err"
 const BROCCOLI_HTTP_REWRITE_RESPONSE = "broccoli_http_rewrite_response"
+const BROCCOLI_HTTP_DISABLE_PB_VALIDATE = "broccoli_http_disable_pb_validate"
+const BROCCOLI_HTTP_USE_GINBIND_VALIDATE_FOR_PB = "broccoli_http_use_ginbind_validate_for_pb"
 
 var SuccessResponse SuccessResponseHandler = defaultSuccessResponse
 var ErrorResponse ErrorResponseHandler = defaultErrorResponse
@@ -30,6 +32,10 @@ var ErrorResponse ErrorResponseHandler = defaultErrorResponse
 type SuccessResponseHandler func(c *gin.Context, rsp interface{})
 type ErrorResponseHandler func(c *gin.Context, err error)
 type reWriteErrFn func(c *gin.Context, err error)
+
+type validator interface {
+	Validate() error
+}
 
 // SetReWriteErrFn 自定义错误处理
 func SetReWriteErrFn(f reWriteErrFn) func(c *gin.Context) {
@@ -237,15 +243,53 @@ func GenerateGinHandle(handleFunc interface{}) func(c *gin.Context) {
 		req := reqV.Interface()
 		// 针对proto.Message进行反序列化和校验
 		if pb, ok := req.(proto.Message); ok {
-			if c.GetBool(ZEUS_HTTP_USE_GINBIND_VALIDATE_FOR_PB) {
+			if c.GetBool(BROCCOLI_HTTP_USE_GINBIND_VALIDATE_FOR_PB) {
 				if err := c.ShouldBind(req); err != nil {
 					ExtractLogger(c).Error(err)
 					ErrorResponse(c, broccolierrors.ECodeInvalidParams.ParseErr(err.Error()))
 					return
 				}
 			} else {
-
+				val := make(map[string]interface{})
+				if err := c.ShouldBind(&val); err != nil {
+					ExtractLogger(c).Debug(err)
+					ErrorResponse(c, broccolierrors.ECodeJsonUnmarshal.ParseErr(err.Error()))
+					return
+				}
+				b, err := utils.Marshal(val)
+				if err != nil {
+					ExtractLogger(c).Debug(err)
+					ErrorResponse(c, broccolierrors.ECodeJsonMarshal.ParseErr(err.Error()))
+					return
+				}
+				// 允许未定义pb
+				m := jsonpb.Unmarshaler{
+					AllowUnknownFields: true,
+				}
+				err = m.Unmarshal(bytes.NewBuffer(b), pb)
+				if err != nil {
+					ExtractLogger(c).Debug(err)
+					ErrorResponse(c, broccolierrors.ECodeJSONPBUnmarshal.ParseErr(err.Error()))
+					return
+				}
+				if !c.GetBool(BROCCOLI_HTTP_DISABLE_PB_VALIDATE) {
+					if v, ok := req.(validator); v != nil && ok {
+						if err := v.Validate(); err != nil {
+							ExtractLogger(c).Debug(err)
+							ErrorResponse(c, broccolierrors.ECodeInvalidParams.ParseErr(err.Error()))
+							return
+						}
+					}
+				}
 			}
+		} else {
+			// 非proto.Message
+			if err := c.ShouldBind(req); err != nil {
+				ExtractLogger(c).Debug(err)
+				ErrorResponse(c, broccolierrors.ECodeInvalidParams.ParseErr(err.Error()))
+				return
+			}
+
 		}
 
 		ctx := c.Request.Context()
