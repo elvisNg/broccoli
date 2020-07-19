@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"path"
 	"runtime"
@@ -276,17 +277,17 @@ func (s *Service) initServer() (err error) {
 	if s.options.Port > 0 { // 优先使用命令行传递的值
 		serverPort = uint32(s.options.Port)
 	}
-	if serverPort == 0 { // 没配置则设置为默认值
+	/*if serverPort == 0 { // 没配置则设置为默认值
 		serverPort = 9090
-	}
-	microConf.ServerPort = serverPort
+	}*/
+	microConf.ServerPort = serverPort // 最终值为0，使用随机端口
 
 	serviceName := microConf.ServiceName
 	if utils.IsEmptyString(serviceName) {
 		serviceName = s.options.ServiceName
 	}
 	microConf.ServiceName = serviceName
-	gomicroservice, err := s.newGomicroSrv(microConf)
+	/*gomicroservice, err := s.newGomicroSrv(microConf)
 	if err != nil {
 		return
 	}
@@ -295,12 +296,50 @@ func (s *Service) initServer() (err error) {
 	gw, err := s.newHTTPGateway(gwOption{
 		grpcEndpoint:    fmt.Sprintf("localhost:%d", serverPort),
 		swaggerJSONFile: s.options.SwaggerJSONFileName,
+	})*/
+	newHTTPApiServerOpt := micro.AfterStart(func() (err error) {
+		addr := s.container.GetGoMicroService().Server().Options().Address
+		gw, err := s.newHTTPGateway(gwOption{
+			// grpcEndpoint:    fmt.Sprintf("localhost:%d", serverPort),
+			grpcEndpoint:    addr,
+			swaggerJSONFile: s.options.SwaggerJSONFileName,
+		})
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		s.container.SetHTTPHandler(gw)
+
+		go func() {
+			addr := fmt.Sprintf("%s:%d", s.options.ApiInterface, s.options.ApiPort)
+			// log.Printf("http apiserver listen on %s", addr)
+			// Start HTTP server (and proxy calls to gRPC server endpoint, serve http, serve swagger)
+			// if err := http.ListenAndServe(addr, gw); err != nil {
+			// 	log.Fatal(err)
+			// }
+			srv := &http.Server{
+				Handler: gw,
+			}
+			ln, err := net.Listen("tcp", addr)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+			// host, port, err := net.SplitHostPort(ln.Addr().String())
+			// log.Println(host, port)
+			log.Printf("http apiserver listen on %s\n", ln.Addr())
+			if err := srv.Serve(ln); err != nil {
+				log.Fatal(err)
+				return
+			}
+		}()
+		return
 	})
+	gomicroservice, err := s.newGomicroSrv(microConf, newHTTPApiServerOpt)
 	if err != nil {
 		return
 	}
-	s.container.SetHTTPHandler(gw)
-
+	s.container.SetGoMicroService(gomicroservice)
 	return
 }
 
@@ -323,7 +362,7 @@ func (s *Service) RunServer() (err error) {
 	return
 }
 
-func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err error) {
+func (s *Service) newGomicroSrv(conf config.GoMicro, srvopts ...micro.Option) (gms micro.Service, err error) {
 	var gomicroservice micro.Service
 	opts := []micro.Option{
 		micro.WrapHandler(zgomicro.GenerateServerLogWrap(s.ng)), // 保证serverlogwrap在最前
@@ -362,6 +401,7 @@ func (s *Service) newGomicroSrv(conf config.GoMicro) (gms micro.Service, err err
 		s.container.SetServiceID(serviceID)
 		return nil
 	}))
+	opts = append(opts, srvopts...)
 	// new micro service
 	gomicroservice = zgomicro.NewService(context.Background(), conf, opts...)
 	if s.options.GoMicroHandlerRegisterFn != nil {
