@@ -134,6 +134,9 @@ func Access(ng engine.Engine) gin.HandlerFunc {
 		if ng.GetContainer().GetRedisCli() != nil {
 			ctx = broccolictx.RedisToContext(ctx, ng.GetContainer().GetRedisCli().GetCli())
 		}
+		if ng.GetContainer().GetMysql() != nil {
+			ctx = broccolictx.MysqlToContext(ctx, ng.GetContainer().GetMysql())
+		}
 		c.Set(BROCCOLI_CTX, ctx)
 		l.Debugln("access start", c.Request.URL.Path)
 		c.Next()

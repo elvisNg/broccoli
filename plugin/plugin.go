@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/elvisNg/broccoli/mysql/zmysql"
 	"log"
 	"net/http"
 
@@ -34,6 +35,7 @@ type Container struct {
 	httpHandler http.Handler
 	// gomicro grpc
 	gomicroService micro.Service
+	mysql          zmysql.Mysql
 
 	// dbPool          *sql.DB
 	// transport       *http.Transport
@@ -51,7 +53,7 @@ func (c *Container) Init(appcfg *config.AppConf) {
 	c.initLogger(&appcfg.LogConf)
 	c.initTracer(&appcfg.Trace)
 	c.initMongo(&appcfg.MongoDB)
-	c.initMysql(appcfg.MysqlSource)
+	c.initMysql(&appcfg.Mysql)
 	log.Println("[Container.Init] finish")
 	c.appcfg = *appcfg
 }
@@ -70,7 +72,9 @@ func (c *Container) Reload(appcfg *config.AppConf) {
 	if c.appcfg.MongoDB != appcfg.MongoDB {
 		c.reloadMongo(&appcfg.MongoDB)
 	}
-	c.initMysql(appcfg.MysqlSource)
+	if c.appcfg.Mysql != appcfg.Mysql {
+		c.reloadMysql(&appcfg.Mysql)
+	}
 	log.Println("[Container.Reload] finish")
 	c.appcfg = *appcfg
 }
@@ -98,6 +102,31 @@ func (c *Container) reloadRedis(cfg *config.Redis) {
 
 func (c *Container) GetRedisCli() zredis.Redis {
 	return c.redis
+}
+
+// Mysql
+func (c *Container) initMysql(cfg *config.Mysql) {
+	if cfg.Enable {
+		c.mysql = broccolimysql.InitClient(cfg)
+	}
+}
+
+func (c *Container) reloadMysql(cfg *config.Mysql) {
+	if cfg.Enable {
+		if c.mysql != nil {
+			c.mysql.Reload(cfg)
+		} else {
+			c.mysql = broccolimysql.InitClient(cfg)
+		}
+	} else if c.mysql != nil {
+		// 释放
+		// c.mysql.Release()
+		c.mysql = nil
+	}
+}
+
+func (c *Container) GetMyslCli() zmysql.Mysql {
+	return c.mysql
 }
 
 // GoMicroClient
@@ -259,7 +288,7 @@ func (c *Container) GetMongo() zmongo.Mongo {
 	return c.mongo
 }
 
-// mysql
-func (c *Container) initMysql(conf map[string]config.MysqlDB) {
-	broccolimysql.ReloadConfig(conf)
+//GetMysql
+func (c *Container) GetMysql() zmysql.Mysql {
+	return c.mysql
 }

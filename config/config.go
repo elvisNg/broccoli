@@ -21,11 +21,12 @@ type Entry struct {
 
 // AppConf 应用的具体配置
 type AppConf struct {
-	LogConf             LogConf                `json:"log_conf" toml:"log_conf" yaml:"log_conf"`
-	Redis               Redis                  `json:"redis"`
-	MongoDB             MongoDB                `json:"mongodb"`
-	MongoDBSource       map[string]MongoDB     `json:"mongodb_source"`
-	MysqlSource         map[string]MysqlDB     `json:"mysql_source"`
+	LogConf       LogConf            `json:"log_conf" toml:"log_conf" yaml:"log_conf"`
+	Redis         Redis              `json:"redis"`
+	MongoDB       MongoDB            `json:"mongodb"`
+	MongoDBSource map[string]MongoDB `json:"mongodb_source"`
+	//MysqlSource         map[string]MysqlDB     `json:"mysql_source"`
+	Mysql               Mysql                  `json:"mysql"`
 	RedisSource         map[string]Redis       `json:"redis_source"`
 	BrokerSource        map[string]Broker      `json:"broker_source"`
 	EBus                EBus                   `json:"ebus"`
@@ -38,15 +39,14 @@ type AppConf struct {
 	UpdateTime          time.Time              `json:"-"`
 }
 
-
 type Trace struct {
 	ServiceName string  `json:"service_name"`
-	TraceUrl   string  `json:"trace_url"`
-	Rate       float64 `json:"rate"`
-	Sampler    string  `json:"sampler"`
-	Mod        uint64  `json:"mod"`
-	OnlyLogErr bool    `json:"only_log_err"` // true 只记录出错日志
-	Enable     bool    `json:"enable"`       // 启用组件
+	TraceUrl    string  `json:"trace_url"`
+	Rate        float64 `json:"rate"`
+	Sampler     string  `json:"sampler"`
+	Mod         uint64  `json:"mod"`
+	OnlyLogErr  bool    `json:"only_log_err"` // true 只记录出错日志
+	Enable      bool    `json:"enable"`       // 启用组件
 }
 
 type MongoDB struct {
@@ -68,12 +68,17 @@ type Redis struct {
 	Enable             bool   `json:"enable"` // 启用组件
 }
 
-type MysqlDB struct {
-	DataSourceName string `json:"datasourcename"`
-	MaxIdleConns   int    `json:"maxidleconns"`
-	MaxOpenConns   int    `json:"maxopenconns"`
-	TraceOnlyLogErr bool   `json:"trace_only_log_err"`
-	Enable         bool   `json:"enable"` // 启用组件
+type Mysql struct {
+	Host            string        `json:"host"`
+	User            string        `json:"user"`
+	Pwd             string        `json:"pwd"`
+	DataSourceName  string        `json:"datasourcename"`
+	CharSet         string        `json:"charset"`
+	ParseTime       bool          `json:"parse_time"`
+	ConnMaxLifetime time.Duration `json:"conn_max_lifetime"`
+	MaxIdleConns    int           `json:"max_idle_conns"`
+	MaxOpenConns    int           `json:"max_oepn_conns"`
+	Enable          bool          `json:"enable"` // 启用组件
 }
 
 type EBus struct {

@@ -1,6 +1,7 @@
 package zcontainer
 
 import (
+	"github.com/elvisNg/broccoli/mysql/zmysql"
 	"net/http"
 
 	"github.com/micro/go-micro"
@@ -29,4 +30,5 @@ type Container interface {
 	SetGoMicroService(s micro.Service)
 	GetGoMicroService() micro.Service
 	GetMongo() zmongo.Mongo
+	GetMysql() zmysql.Mysql
 }
